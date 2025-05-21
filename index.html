@@ -6,14 +6,14 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { 
-      background: #fff;
+      background: #0437f2;
       color: #333;
       font-family: Georgia, serif;
       line-height: 1.6;
       margin: 0;
       padding: 0;
     }
-    a { color: #069; text-decoration: none; }
+    a { color: #230f5c; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .container {
       max-width: 640px;
@@ -24,16 +24,16 @@
     h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
     p.description {
       font-style: italic;
-      color: #666;
+      color: #231f6b;
       margin: 0 0 1rem;
     }
     #canvas { 
-      border: 1px solid #ccc; 
+      border: 2px solid #ccc; 
       background: #f9f9f9;
       display: block;
       margin: 1rem auto;
     }
-    line.edge { stroke-width: 2px; }
+    line.edge { stroke-width: 3px; }
     #info { 
       font-family: sans-serif; 
       font-weight: bold; 
@@ -55,20 +55,20 @@
 <body>
   <div class="container">
     <header>
-      <h1>Connectivity Commander</h1>
+      <h2>Connectivity Commander</h2>
       <p class="description">Activate nodes to build a single connected network before time runs out—the connection radius shrinks over time, so plan your moves carefully!</p>
     </header>
     <div id="info">Loading…</div>
     <button id="restart">Restart</button>
-    <svg id="canvas" width="600" height="600"></svg>
+    <svg id="canvas" width="400" height="400"></svg>
   </div>
 
   <script>
   // —— params —— 
-  const width = 600, height = 600,
+  const width = 400, height = 400,
         nNodes = 50,
         initialRadius = 100,    // px
-        duration = 60 * 1000;   // ms
+        duration = 120 * 1000;   // ms
 
   let nodes, activationOrder, svg, edgesG, nodesG, info, start, colorScale;
 
@@ -91,7 +91,7 @@
     // violet-violet scale: light lavender → true blueviolet
     colorScale = d3.scaleLinear()
                    .domain([0, nNodes - 1])
-                   .range(["#e0c6ff", "blueviolet"]);
+                   .range(["#6d39fa", "#3a0db5"]);
 
     // redraw every 100 ms
     d3.interval(draw, 100);
