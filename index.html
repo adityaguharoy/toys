@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Connectivity Commander</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { 
+      font-family: sans-serif; 
+      text-align: center; 
+      background: #fafafa; 
+    }
+    #canvas { 
+      border: 1px solid #ccc; 
+      margin-top: 1rem; 
+      background: #fff; 
+    }
+    line.edge { 
+      stroke-width: 2px; 
+    }
+    #info { 
+      margin-top: .5rem; 
+      font-weight: bold; 
+    }
+    button { 
+      margin-top: .5rem; 
+      padding: .5rem 1rem; 
+      font-size: 1rem; 
+      cursor: pointer; 
+    }
+  </style>
+</head>
+<body>
+  <h1>Connectivity Commander</h1>
+  <div id="info">Loading…</div>
+  <button id="restart">Restart</button>
+  <svg id="canvas" width="600" height="600"></svg>
+
+  <script>
+  // —— params —— 
+  const width = 600, height = 600,
+        nNodes = 50,
+        initialRadius = 100,    // px
+        duration = 60 * 1000;   // ms
+
+  let nodes, activationOrder, svg, edgesG, nodesG, info, start, colorScale;
+
+  function init() {
+    // generate nodes
+    nodes = d3.range(nNodes).map(i=>({
+      id: i,
+      x: Math.random() * width,
+      y: Math.random() * height
+    }));
+    activationOrder = [];
+
+    // clear & setup
+    svg = d3.select("#canvas").html("");
+    edgesG = svg.append("g");
+    nodesG = svg.append("g");
+    info = d3.select("#info");
+    start = Date.now();
+
+    // violet-violet scale: light lavender → true blueviolet
+    colorScale = d3.scaleLinear()
+                   .domain([0, nNodes - 1])
+                   .range(["#e0c6ff", "blueviolet"]);
+
+    // redraw every 100 ms
+    d3.interval(draw, 100);
+    draw();
+  }
+
+  // Euclidean distance
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+  function draw() {
+    const t = Date.now() - start;
+    const radius = Math.max(0, initialRadius * (1 - t/duration));
+    const activatedSet = new Set(activationOrder);
+
+    // build links between activated nodes
+    const links = [];
+    activationOrder.forEach(i=>{
+      activationOrder.forEach(j=>{
+        if(i<j && dist(nodes[i],nodes[j]) <= radius)
+          links.push([i,j]);
+      });
+    });
+
+    // —— render edges —— 
+    const el = edgesG.selectAll("line").data(links, d=>d.join("-"));
+    el.join(
+      enter => enter.append("line")
+                    .attr("class","edge")
+                    .attr("stroke", d=> {
+                      // color by the later-clicked node
+                      const idx = activationOrder.indexOf(d[1]);
+                      return colorScale(idx);
+                    }),
+      update => update,
+      exit => exit.remove()
+    )
+    .attr("x1", d=>nodes[d[0]].x)
+    .attr("y1", d=>nodes[d[0]].y)
+    .attr("x2", d=>nodes[d[1]].x)
+    .attr("y2", d=>nodes[d[1]].y);
+
+    // —— render nodes —— 
+    const nc = nodesG.selectAll("circle").data(nodes, d=>d.id);
+    nc.join("circle")
+      .attr("cx", d=>d.x)
+      .attr("cy", d=>d.y)
+      .attr("r", 6)
+      .attr("fill", d=>{
+        const idx = activationOrder.indexOf(d.id);
+        return idx >= 0 ? colorScale(idx) : "#ddd";
+      })
+      .attr("stroke", d=>{
+        const idx = activationOrder.indexOf(d.id);
+        return idx >= 0 ? "#fff" : "#aaa";
+      })
+      .attr("stroke-width", d=>activationOrder.includes(d.id) ? 2 : 1)
+      .on("click", handleClick);
+
+    // —— update info text —— 
+    const secsLeft = Math.ceil((duration - t)/1000);
+    info.text(
+      t > duration 
+        ? "⏰ Time’s up! Click Restart to play again." 
+        : `Time left: ${secsLeft}s | Radius: ${Math.floor(radius)}px`
+    );
+  }
+
+  function handleClick(e, d) {
+    const t = Date.now() - start;
+    if (t > duration) return;
+    if (activationOrder.includes(d.id)) return;
+
+    const radius = initialRadius * (1 - t/duration);
+    if (activationOrder.length > 0) {
+      const ok = activationOrder.some(i => dist(nodes[i], d) <= radius);
+      if (!ok) return alert("🛑 No connection—game over!");
+    }
+
+    activationOrder.push(d.id);
+    draw();
+    if (activationOrder.length === nNodes) {
+      alert("🎉 You’ve connected all nodes—victory!");
+    }
+  }
+
+  // wire up restart button
+  d3.select("#restart").on("click", init);
+
+  init();
+  </script>
+</body>
+</html>
