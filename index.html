@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Connectivity Commander</title>
-
-  <!-- 1) Google Font -->
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=WDXL+Lubrifont+TC&display=swap" rel="stylesheet">
-
-  <!-- 2) D3.js -->
+  <!-- D3.js -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <style>
-    /* make the page fill the screen, dark gradient */
     body {
       margin: 0;
       padding: 0;
@@ -20,6 +17,12 @@
       color: #ddd;
       font-family: Georgia, serif;
       line-height: 1.6;
+
+      /* scale everything to 90% */
+      transform: scale(0.9);
+      transform-origin: top left;
+      width: 111.111%;   /* compensate for the shrink */
+      height: 111.111%;
     }
 
     /* full-screen background SVG */
@@ -43,7 +46,6 @@
       margin-bottom: 1rem;
     }
 
-    /* 3) Use the new font for the heading */
     header h2 {
       font-family: 'WDXL Lubrifont TC', serif;
       font-size: 2.5rem;
@@ -90,8 +92,7 @@
   </style>
 </head>
 <body>
-
-  <!-- background SVG for random graphs -->
+  <!-- background SVG -->
   <svg id="bg"></svg>
 
   <div class="container">
@@ -139,7 +140,6 @@
           .attr("cx", d=>d.x).attr("cy", d=>d.y);
       });
 
-    // resize handler
     window.addEventListener("resize", () => {
       bgWidth = window.innerWidth; bgHeight = window.innerHeight;
       bgSvg.attr("width", bgWidth).attr("height", bgHeight);
@@ -147,8 +147,7 @@
       bgSim.alpha(1).restart();
     });
 
-
-    // —— Your original game code —— 
+    // —— Game code —— 
     const width = 400, height = 400,
           nNodes = 50,
           initialRadius = 100,
@@ -180,7 +179,6 @@
     function draw() {
       const t = Date.now() - start;
       const radius = Math.max(0, initialRadius*(1 - t/duration));
-      const activatedSet = new Set(activationOrder);
 
       const links = [];
       activationOrder.forEach(i=>{
@@ -213,9 +211,7 @@
           const idx = activationOrder.indexOf(d.id);
           return idx>=0 ? colorScale(idx) : "#555";
         })
-        .attr("stroke", d=>{
-          return activationOrder.includes(d.id) ? "#fff" : "#888";
-        })
+        .attr("stroke", d=>activationOrder.includes(d.id) ? "#fff" : "#888")
         .attr("stroke-width", d=>activationOrder.includes(d.id)?2:1)
         .on("click", handleClick);
 
@@ -229,12 +225,10 @@
 
     function handleClick(e,d) {
       const t = Date.now() - start;
-      if (t>duration) return;
-      if (activationOrder.includes(d.id)) return;
+      if (t>duration || activationOrder.includes(d.id)) return;
       const radius = initialRadius*(1 - t/duration);
-      if (activationOrder.length>0) {
-        const ok = activationOrder.some(i=>dist(nodes[i],d)<=radius);
-        if (!ok) return alert("🛑 No connection—game over!");
+      if (activationOrder.length>0 && !activationOrder.some(i=>dist(nodes[i],d)<=radius)) {
+        return alert("🛑 No connection—game over!");
       }
       activationOrder.push(d.id);
       draw();
