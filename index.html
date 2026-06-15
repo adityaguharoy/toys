@@ -99,7 +99,7 @@
     <header>
       <h2>Connectivity Commander</h2>
       <p class="description">
-        Activate nodes to build a single connected network before time runs out—the connection radius shrinks over time, so plan your moves carefully!
+        Activate nodes to build a single connected network before time runs out the connection radius shrinks over time, so plan your moves carefully!
       </p>
     </header>
 
@@ -112,7 +112,7 @@
     // —— Background random graph —— 
     const bgSvg = d3.select("#bg");
     let bgWidth = window.innerWidth, bgHeight = window.innerHeight;
-    bgSvg.attr("width", bgWidth).attr("height", bgHeight);
+    bgSvg.attr("width", 2*bgWidth).attr("height", bgHeight);
 
     const N_BG = 60, L_BG = 100;
     const bgNodes = d3.range(N_BG).map(i=>({id:i}));
